@@ -1,6 +1,8 @@
 import logging
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 # 1. Logging Setup
 logging.basicConfig(
@@ -180,18 +182,96 @@ def clean_transaction_data(df_raw: pd.DataFrame) -> pd.DataFrame:
         raise
 
 
+def run_business_analytics(df: pd.DataFrame):
+    """Performs deep aggregations and prints core insights."""
+    print("\n" + "=" * 45)
+    print("📈 SECTION 1: BUSINESS INSIGHTS & AGGREGATIONS")
+    print("=" * 45)
+
+    # 1. Product Matrix
+    print("\n[📊] Product Performance Metrics:")
+    product_matrix = (
+        df.groupby("Product_Name")
+        .agg(
+            Total_Revenue=("Sales_Amount", "sum"),
+            Avg_Profit_Margin=("Profit_Margin_%", "mean"),
+            Volume=("Transaction_ID", "count"),
+        )
+        .sort_values(by="Total_Revenue", ascending=False)
+    )
+    print(product_matrix.round(2))
+
+    # 2. Risk Distribution
+    print("\n[⚠️] Audit Compliance & Risk Value Counts:")
+    risk_matrix = df["Performance_Risk_Audit"].value_counts()
+    print(risk_matrix)
+
+
+def plot_statistical_distributions(df: pd.DataFrame):
+    """Generates advanced statistical charts using Seaborn."""
+    logging.info("Generating data distribution charts...")
+
+    # Theme config
+    sns.set_theme(style="darkgrid")
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+    # Chart 1: Multi-Density KDE Plot (Profit Margin vs Sales Categories)
+    sns.kdeplot(
+        data=df,
+        x="Profit_Margin_%",
+        hue="Sales_Category",
+        fill=True,
+        common_norm=False,
+        palette="viridis",
+        alpha=0.4,
+        linewidth=2,
+        ax=axes[0],
+    )
+    axes[0].set_title(
+        "Kernel Density Estimate (KDE) of Profit Margin",
+        fontsize=13,
+        weight="bold",
+    )
+    axes[0].set_xlabel("Profit Margin (%)")
+    axes[0].set_ylabel("Probability Density")
+
+    # Chart 2: Bivariate Distribution (Sales Amount vs Profit Earned with Hue)
+    sns.scatterplot(
+        data=df,
+        x="Sales_Amount",
+        y="Profit_Earned",
+        hue="Performance_Risk_Audit",
+        palette="magma",
+        alpha=0.7,
+        ax=axes[1],
+    )
+    axes[1].set_title(
+        "Bivariate Clustering: Sales vs Profit Dynamics",
+        fontsize=13,
+        weight="bold",
+    )
+    axes[1].set_xlabel("Sales Amount ($)")
+    axes[1].set_ylabel("Profit Earned ($)")
+
+    plt.tight_layout()
+    logging.info("Displaying charts. Close the window to finalize script.")
+    plt.show()
+
+
 # --- Execution ---
 if __name__ == "__main__":
     try:
-        # 1. Messy data generate karein
+        # Step 1: Data creation
         df_messy = generate_messy_data(n_rows=500)
 
-        # 2. Pipeline run karein
-        df_cleaned_data = clean_transaction_data(df_messy)
+        # Step 2: Running engineering pipeline
+        df_cleaned = clean_transaction_data(df_messy)
 
-        # 3. Output check karein
-        print("\n--- FIRST 5 ROWS OF CLEANED DATA ---")
-        print(df_cleaned_data.head())
+        # Step 3: Extract business metrics
+        run_business_analytics(df_cleaned)
+
+        # Step 4: Trigger Seaborn graphs
+        plot_statistical_distributions(df_cleaned)
 
     except Exception as pipeline_error:
         print(f"Main Execution Stopped: {pipeline_error}")

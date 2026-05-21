@@ -1,43 +1,27 @@
-# 📊 Transaction Data Cleaning & Feature Engineering Pipeline
+# 📊 Robust Transaction Data Cleaning & Feature Engineering Pipeline
 
-A Python-based data engineering pipeline built with **Pandas** and **NumPy** to clean, standardize, and audit messy transactional sales data. 
+A production-grade, modular Python pipeline built with **Pandas** and **NumPy** to clean, standardize, and audit messy transactional sales data. 
 
 ## 🎯 Project Overview
-Raw business data is often filled with inconsistencies like duplicate transactions, mixed casing, currency formatting issues, unrealistic outliers, and missing values. This project automates the transition from a highly chaotic dataset into an analytical-ready DataFrame, followed by statistical segmentation and risk profiling.
+This project transforms a highly chaotic raw dataset into an analytical-ready DataFrame. It replaces basic script execution with a **modular function-based architecture** featuring structural validations, comprehensive logging, and defensive programming to ensure enterprise reliability.
 
 ## 🛠️ Tech Stack
 * **Language:** Python 3.x
 * **Libraries:** Pandas, NumPy
+* **Core Modules:** Logging
 
-## 🚀 Key Features & Pipeline Steps
+## 🚀 Key Features & Pipeline Architecture
 
-### 1. Data Deduplication & Standardization
-* **Unique Constraints:** Removes duplicate rows based on `Transaction_ID` while keeping the first occurrence.
-* **Text Formatting:** Standardizes `Product_Name` to upper case and `Region` to title case.
-* **Inconsistency Resolution:** Handles whitespace trimming and maps inconsistent labels (e.g., `None` or missing values are categorized as `Unknown`).
+### 1. Production-Grade Reliability
+* **Functional Architecture:** Core logic is encapsulated inside `clean_transaction_data()` for seamless integration into larger ETL workflows.
+* **Defensive Schema Validation:** Explicit checks for mandatory columns throw a structural `KeyError` before execution to prevent silent down-stream script failures.
+* **Unified Error Logging:** Replaces generic print statements with structured `logging` levels (`INFO`, `WARNING`, `ERROR`) tracking execution steps and timestamps.
+* **Division-by-Zero Protection:** Uses vector-based `np.where` conditionally to safely calculate profit margins without encountering mathematical infinity errors.
 
-### 2. Robust Currency & Numerical Parsing
-* **Regex Cleaning:** Strips currency symbols (`$`) and commas from monetary columns.
-* **Type Conversion:** Force-casts variables into numerical float types (`pd.to_numeric`).
-
-### 3. Outlier Mitigation & Filtering
-* **Domain Constraint Removal:** Flags and voids extreme artificial data points (e.g., values $> \$50,000$).
-* **Logical Correction:** Sets negative profits to `NaN` as profit cannot realistically be negative under these system rules.
-* **Statistical Filtering:** Uses the **Interquartile Range (IQR)** method to detect and remove distribution outliers beyond the upper boundary ($Q3 + 1.5 \times IQR$).
-
-### 4. Smart Imputation Strategy
-* **Sales Amount:** Replaces missing data and treated outliers with the **Median** to avoid skewness.
-* **Profit Earned:** Replaces missing figures with the **Mean** value.
-* **Categorical Data:** Imputes missing return policy entries as `'Unknown'`.
-
-### 5. Advanced Feature Engineering
-* **Profit Margin:** Calculates `Profit_Margin_%` dynamically.
-* **Sales Binning:** Groups revenue scales into categorical segments (`Low_Sales`, `Medium_Sales`, `High_Sales`) using `pd.cut`.
-* **Performance Risk Audit:** Executes a multi-conditional rule matrix (`np.select`) to assign risk tiers:
-  * `Highly_Profitable_Safe`
-  * `Standard_Risk`
-  * `Low_Margin_Or_High_Return_Risk`
-  * `Review_Required`
+### 2. Advanced Data Imputation & Engineering
+* **Outlier Mitigation:** Removes extreme absolute data anomalies and applies the statistical **Interquartile Range (IQR)** method to handle distribution skewness.
+* **Smart Imputation:** Dynamically replaces missing numbers with conditional central tendencies (**Median** for Sales, **Mean** for Profit).
+* **Multi-Conditional Risk Auditing:** Runs an advanced matrix using `np.select` to auto-categorize sales tiers and flag transactional compliance risks (`Performance_Risk_Audit`).
 
 ## ⚙️ How To Run
 
@@ -46,20 +30,22 @@ Raw business data is often filled with inconsistencies like duplicate transactio
 git clone <your-repository-link>
 ```
 
-2. Install dependencies:
+2. Activate your virtual environment and run the script:
 ```bash
-pip install pandas numpy
+python dirty_sales_dataset.py
 ```
 
-3. Run the script:
-```bash
-python data_cleaning.py
-```
-
-## 📊 Sample Output Format
-The resulting output provides a structured schema optimized for downstream BI tools or machine learning models:
+## 📊 Sample Output Schema
+The final engineered dataset produces the following clean structured fields:
 
 
-| Transaction_ID | Product_Name | Region | Sales_Amount | Profit_Earned | Return_Policy_Met | Profit_Margin_% | Sales_Category | Performance_Risk_Audit |
-|----------------|--------------|--------|--------------|---------------|-------------------|-----------------|----------------|------------------------|
-| TXN-1000       | PRODUCT_A    | North  | 450.00       | 95.50         | Yes               | 21.22           | Medium_Sales   | Standard_Risk          |
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| **Transaction_ID** | Object / Str | Unique transactional identification key (Deduplicated) |
+| **Product_Name** | Object / Str | Standardized upper-case alphanumeric values |
+| **Region** | Object / Str | Trimmed and normalized title-case regional sectors |
+| **Sales_Amount** | Float64 | Sanitized and imputed transaction values |
+| **Profit_Earned** | Float64 | Cleaned positive margin values (Imputed via Mean) |
+| **Profit_Margin_%** | Float64 | Calculated financial margin indicator |
+| **Sales_Category** | Categorical | Revenue scales segmented into low, medium, or high |
+| **Performance_Risk_Audit** | Object / Str | Rule-based performance metric profiling |
